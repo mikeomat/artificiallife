@@ -11,7 +11,7 @@ namespace ArtificialLifePlugin
     {
         internal static void Execute(this ISymbolicExpressionTree tree, World world, Creature creature)
         {
-            int maxLoops = 50;
+            int maxLoops = 1000;
 
             world.AddToHistory(creature);
 
@@ -58,16 +58,13 @@ namespace ArtificialLifePlugin
                 {
                     world[creature.PosX, creature.PosY] = WorldStatus.Eaten;
                     world.Food--;
-                    creature.Energy++;
                 }
                 else
                 {
                     creature.Energy--;
                 }
-                world.MovementCount++;
+                world.AddToHistory(creature);
             }
-
-            world.AddToHistory(creature);
 
             return world;
         }
@@ -82,11 +79,11 @@ namespace ArtificialLifePlugin
             }
             else if (look == 3)
             {
-                x= world.GetWorldPosX(x + 1);
+                x = world.GetWorldPosX(x + 1);
             }
             else if (look == 7)
             {
-                x= world.GetWorldPosX(x - 1);
+                x = world.GetWorldPosX(x - 1);
             }
             else
             {

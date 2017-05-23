@@ -5,12 +5,8 @@ using HeuristicLab.Encodings.SymbolicExpressionTreeEncoding;
 using HeuristicLab.Optimization;
 using HeuristicLab.Parameters;
 using HeuristicLab.Persistence.Default.CompositeSerializers.Storable;
-using HeuristicLab.Random;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArtificialLifePlugin
 {
@@ -26,14 +22,15 @@ namespace ArtificialLifePlugin
         private const string InitialEnergyParameterName = "InitialEnergy";
         private const string InitialPosXParameterName = "InitialPosX";
         private const string InitialPosYParameterName = "InitialPosY";
+        private const string WorldParameterName = "World";
 
         public IFixedValueParameter<IntValue> WorldWidthParameter => (IFixedValueParameter<IntValue>)Parameters[WorldWidthParameterName];
         public IFixedValueParameter<IntValue> WorldHeightParameter => (IFixedValueParameter<IntValue>)Parameters[WorldHeightParameterName];
+        public ValueParameter<IntMatrix> WorldParameter => (ValueParameter<IntMatrix>)Parameters[WorldParameterName];
         public IFixedValueParameter<BoolValue> RandomWorldParameter => (IFixedValueParameter<BoolValue>)Parameters[RandomWorldParameterName];
         public IFixedValueParameter<IntValue> RandomWorldSeedParameter => (IFixedValueParameter<IntValue>)Parameters[RandomWorldSeedParameterName];
         public IFixedValueParameter<IntValue> InitialEnergyParameter => (IFixedValueParameter<IntValue>)Parameters[InitialEnergyParameterName];
         public IFixedValueParameter<IntValue> InitialPosXParameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosXParameterName];
-
         public IFixedValueParameter<IntValue> InitialPosYParameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosYParameterName];
         public override bool Maximization => true;
 
@@ -50,8 +47,7 @@ namespace ArtificialLifePlugin
         }
         #endregion
 
-        public Problem()
-          : base()
+        public Problem() : base()
         {
             Parameters.Add(new FixedValueParameter<IntValue>(WorldWidthParameterName, "Width of the world.", new IntValue(25)));
             Parameters.Add(new FixedValueParameter<IntValue>(WorldHeightParameterName, "Height of the world.", new IntValue(25)));
@@ -60,6 +56,15 @@ namespace ArtificialLifePlugin
             Parameters.Add(new FixedValueParameter<IntValue>(InitialEnergyParameterName, "Initial Energy of creature", new IntValue(5)));
             Parameters.Add(new FixedValueParameter<IntValue>(InitialPosXParameterName, "Initial PosX of creature", new IntValue(0)));
             Parameters.Add(new FixedValueParameter<IntValue>(InitialPosYParameterName, "Initial PosY of creature", new IntValue(0)));
+            Parameters.Add(new ValueParameter<IntMatrix>(WorldParameterName, "Food within world", new IntMatrix(25, 25)));
+
+            EventHandler widthHeight = (s, e) =>
+            {
+                WorldParameter.Value = new IntMatrix(WorldHeightParameter.Value.Value, WorldWidthParameter.Value.Value);
+            };
+            WorldWidthParameter.ValueChanged += widthHeight;
+            WorldHeightParameter.ValueChanged += widthHeight;
+
             InitializeGrammar(50, 10);
         }
 
@@ -86,7 +91,7 @@ namespace ArtificialLifePlugin
         public override double Evaluate(ISymbolicExpressionTree tree, IRandom random)
         {
             World world = ExecuteWorld(tree);
-            return world.MovementCount;
+            return world.History.Count;
         }
 
         private void InitializeGrammar(int maxLength, int maxDepth)
@@ -113,7 +118,11 @@ namespace ArtificialLifePlugin
 
         private World CreateWorld()
         {
-            return new World(RandomWorldSeedParameter.Value.Value, WorldWidthParameter.Value.Value, WorldHeightParameter.Value.Value);
+            if (RandomWorldParameter.Value.Value)
+            {
+                return new World(WorldWidthParameter.Value.Value, WorldHeightParameter.Value.Value, RandomWorldSeedParameter.Value.Value);
+            }
+            return new World(WorldWidthParameter.Value.Value, WorldHeightParameter.Value.Value, WorldParameter.Value);
         }
     }
 }

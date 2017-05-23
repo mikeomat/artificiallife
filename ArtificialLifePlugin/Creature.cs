@@ -1,12 +1,20 @@
-﻿namespace ArtificialLifePlugin
+﻿using HeuristicLab.Persistence.Default.CompositeSerializers.Storable;
+
+namespace ArtificialLifePlugin
 {
+    [StorableClass]
     public class Creature
     {
         private int look;
+
+        [Storable]
         public int Energy { get; set; }
+        [Storable]
         public int PosX { get; set; }
+        [Storable]
         public int PosY { get; set; }
 
+        [Storable]
         public int Look
         {
             get
@@ -19,11 +27,18 @@
             }
         }
 
+        [StorableConstructor]
+        public Creature(bool deserializing)
+        {
+
+        }
+
         public Creature(int energy, int posX, int posY)
         {
             Energy = energy;
             PosX = posX;
             PosY = posY;
+            Look = 3;
         }
 
         public Creature Copy()
