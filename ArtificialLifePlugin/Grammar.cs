@@ -8,9 +8,10 @@ namespace ArtificialLifePlugin
 {
     public static class Grammar
     {
-        public static string Foward = "Foward";
-        public static string Backward = "Backward";
-        public static string Left = "Left";
-        public static string Right = "Right";
+        public static string Move = "Move";
+        public static string TurnLeft = "TurnLeft";
+        public static string TurnRight = "TurnRight";
+
+        public static string Prog = "Prog";
     }
 }

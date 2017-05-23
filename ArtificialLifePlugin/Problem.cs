@@ -21,9 +21,20 @@ namespace ArtificialLifePlugin
     {
         private const string WorldWidthParameterName = "WorldWidth";
         private const string WorldHeightParameterName = "WorldHeight";
+        private const string RandomWorldParameterName = "RandomWorld";
+        private const string RandomWorldSeedParameterName = "RandomWorldSeed";
+        private const string InitialEnergyParameterName = "InitialEnergy";
+        private const string InitialPosXParameterName = "InitialPosX";
+        private const string InitialPosYParameterName = "InitialPosY";
 
         public IFixedValueParameter<IntValue> WorldWidthParameter => (IFixedValueParameter<IntValue>)Parameters[WorldWidthParameterName];
         public IFixedValueParameter<IntValue> WorldHeightParameter => (IFixedValueParameter<IntValue>)Parameters[WorldHeightParameterName];
+        public IFixedValueParameter<BoolValue> RandomWorldParameter => (IFixedValueParameter<BoolValue>)Parameters[RandomWorldParameterName];
+        public IFixedValueParameter<IntValue> RandomWorldSeedParameter => (IFixedValueParameter<IntValue>)Parameters[RandomWorldSeedParameterName];
+        public IFixedValueParameter<IntValue> InitialEnergyParameter => (IFixedValueParameter<IntValue>)Parameters[InitialEnergyParameterName];
+        public IFixedValueParameter<IntValue> InitialPosXParameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosXParameterName];
+
+        public IFixedValueParameter<IntValue> InitialPosYParameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosYParameterName];
         public override bool Maximization => true;
 
         #region item cloning and persistence
@@ -42,51 +53,67 @@ namespace ArtificialLifePlugin
         public Problem()
           : base()
         {
-            Parameters.Add(new FixedValueParameter<IntValue>(WorldWidthParameterName, "Width of the world.", new IntValue(10)));
-            Parameters.Add(new FixedValueParameter<IntValue>(WorldHeightParameterName, "Height of the world.", new IntValue(10)));
-            InitializeGrammar(1000, 17);
+            Parameters.Add(new FixedValueParameter<IntValue>(WorldWidthParameterName, "Width of the world.", new IntValue(25)));
+            Parameters.Add(new FixedValueParameter<IntValue>(WorldHeightParameterName, "Height of the world.", new IntValue(25)));
+            Parameters.Add(new FixedValueParameter<BoolValue>(RandomWorldParameterName, "Random world.", new BoolValue(true)));
+            Parameters.Add(new FixedValueParameter<IntValue>(RandomWorldSeedParameterName, "Random world seed", new IntValue(1234)));
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialEnergyParameterName, "Initial Energy of creature", new IntValue(5)));
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialPosXParameterName, "Initial PosX of creature", new IntValue(0)));
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialPosYParameterName, "Initial PosY of creature", new IntValue(0)));
+            InitializeGrammar(50, 10);
         }
 
         public override void Analyze(ISymbolicExpressionTree[] trees, double[] qualities, ResultCollection results, IRandom random)
         {
             const string bestSolutionResultName = "Best Solution";
+            const string bestSolutionTreeResultName = "Best Solution Tree";
             var bestQuality = Maximization ? qualities.Max() : qualities.Min();
             var bestIdx = Array.IndexOf(qualities, bestQuality);
 
+            World world = ExecuteWorld(trees[bestIdx]);
             if (!results.ContainsKey(bestSolutionResultName))
             {
-                results.Add(new Result(bestSolutionResultName, new Solution(trees[bestIdx], WorldHeightParameter.Value.Value, WorldWidthParameter.Value.Value, bestQuality)));
+                results.Add(new Result(bestSolutionResultName, new Solution(trees[bestIdx], WorldHeightParameter.Value.Value, WorldWidthParameter.Value.Value, bestQuality, world)));
+                results.Add(new Result(bestSolutionTreeResultName, trees[bestIdx]));
             }
             else if (((Solution)(results[bestSolutionResultName].Value)).Quality < qualities[bestIdx])
             {
-                results[bestSolutionResultName].Value = new Solution(trees[bestIdx], WorldHeightParameter.Value.Value, WorldWidthParameter.Value.Value, bestQuality);
+                results[bestSolutionResultName].Value = new Solution(trees[bestIdx], WorldHeightParameter.Value.Value, WorldWidthParameter.Value.Value, bestQuality, world);
+                results[bestSolutionTreeResultName].Value = trees[bestIdx];
             }
         }
 
         public override double Evaluate(ISymbolicExpressionTree tree, IRandom random)
         {
-            return tree.Evaluate();
-            //var length = WorldHeightParameter.Value.Value;
-            //var width = WorldWidthParameter.Value.Value;
-
-            //var lawn = Interpreter.EvaluateLawnMowerProgram(length, width, tree);
-            //// count number of squares that have been mowed
-            //int numberOfMowedCells = 0;
-            //for (int i = 0; i < length; i++)
-            //    for (int j = 0; j < width; j++)
-            //        if (lawn[i, j])
-            //        {
-            //            numberOfMowedCells++;
-            //        }
-            //return numberOfMowedCells;
+            World world = ExecuteWorld(tree);
+            return world.MovementCount;
         }
 
         private void InitializeGrammar(int maxLength, int maxDepth)
         {
             var grammar = new SimpleSymbolicExpressionGrammar();
-            grammar.AddTerminalSymbols(new[] { Grammar.Foward, Grammar.Backward, Grammar.Left, Grammar.Right });
+            grammar.AddTerminalSymbols(new[] { Grammar.Move, Grammar.TurnLeft, Grammar.TurnRight });
+            grammar.AddSymbol(Grammar.Prog, 2, 2);
 
             Encoding = new SymbolicExpressionTreeEncoding(grammar, maxLength, maxDepth);
+        }
+
+        private World ExecuteWorld(ISymbolicExpressionTree tree)
+        {
+            World world = CreateWorld();
+            Creature creature = CreateCreature();
+            tree.Execute(world, creature);
+            return world;
+        }
+
+        private Creature CreateCreature()
+        {
+            return new Creature(InitialEnergyParameter.Value.Value, InitialPosXParameter.Value.Value, InitialPosYParameter.Value.Value);
+        }
+
+        private World CreateWorld()
+        {
+            return new World(RandomWorldSeedParameter.Value.Value, WorldWidthParameter.Value.Value, WorldHeightParameter.Value.Value);
         }
     }
 }

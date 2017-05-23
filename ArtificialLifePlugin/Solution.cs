@@ -15,6 +15,8 @@ namespace ArtificialLifePlugin
         [Storable]
         public ISymbolicExpressionTree Tree { get; private set; }
         [Storable]
+        public World World { get; private set; }
+        [Storable]
         public double Quality { get; private set; }
 
         #region item cloning and persistence
@@ -29,6 +31,7 @@ namespace ArtificialLifePlugin
             this.Height = original.Height;
             this.Width = original.Width;
             this.Tree = cloner.Clone(original.Tree);
+            this.World = original.World;
             this.Quality = original.Quality;
         }
         public override IDeepCloneable Clone(Cloner cloner)
@@ -37,13 +40,14 @@ namespace ArtificialLifePlugin
         }
         #endregion
 
-        public Solution(ISymbolicExpressionTree tree, int length, int width, double quality)
+        public Solution(ISymbolicExpressionTree tree, int length, int width, double quality, World world)
           : base("Artificial Life Solution", "A artificial life solution.")
         {
             this.Tree = tree;
             this.Height = length;
             this.Width = width;
             this.Quality = quality;
+            this.World = world;
         }
     }
 }
