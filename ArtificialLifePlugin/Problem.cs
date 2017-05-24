@@ -22,6 +22,7 @@ namespace ArtificialLifePlugin
         private const string InitialEnergyParameterName = "InitialEnergy";
         private const string InitialPosXParameterName = "InitialPosX";
         private const string InitialPosYParameterName = "InitialPosY";
+        private const string InitialLookParameterName = "InitialLook";
         private const string WorldParameterName = "World";
 
         public IFixedValueParameter<IntValue> WorldWidthParameter => (IFixedValueParameter<IntValue>)Parameters[WorldWidthParameterName];
@@ -32,6 +33,7 @@ namespace ArtificialLifePlugin
         public IFixedValueParameter<IntValue> InitialEnergyParameter => (IFixedValueParameter<IntValue>)Parameters[InitialEnergyParameterName];
         public IFixedValueParameter<IntValue> InitialPosXParameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosXParameterName];
         public IFixedValueParameter<IntValue> InitialPosYParameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosYParameterName];
+        public IFixedValueParameter<IntValue> InitialLookParameter => (IFixedValueParameter<IntValue>)Parameters[InitialLookParameterName];
         public override bool Maximization => true;
 
         #region item cloning and persistence
@@ -49,6 +51,7 @@ namespace ArtificialLifePlugin
 
         public Problem() : base()
         {
+            BestKnownQuality = 100.0;
             Parameters.Add(new FixedValueParameter<IntValue>(WorldWidthParameterName, "Width of the world.", new IntValue(25)));
             Parameters.Add(new FixedValueParameter<IntValue>(WorldHeightParameterName, "Height of the world.", new IntValue(25)));
             Parameters.Add(new FixedValueParameter<BoolValue>(RandomWorldParameterName, "Random world.", new BoolValue(true)));
@@ -56,6 +59,7 @@ namespace ArtificialLifePlugin
             Parameters.Add(new FixedValueParameter<IntValue>(InitialEnergyParameterName, "Initial Energy of creature", new IntValue(5)));
             Parameters.Add(new FixedValueParameter<IntValue>(InitialPosXParameterName, "Initial PosX of creature", new IntValue(0)));
             Parameters.Add(new FixedValueParameter<IntValue>(InitialPosYParameterName, "Initial PosY of creature", new IntValue(0)));
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialLookParameterName, "Initial Look of creature values from 0 to 7 starting with left top clockwise", new IntValue(3)));
             Parameters.Add(new ValueParameter<IntMatrix>(WorldParameterName, "Food within world", new IntMatrix(25, 25)));
 
             EventHandler widthHeight = (s, e) =>
@@ -91,15 +95,12 @@ namespace ArtificialLifePlugin
         public override double Evaluate(ISymbolicExpressionTree tree, IRandom random)
         {
             World world = ExecuteWorld(tree);
-            return world.History.Count;
+            return (1.0 - (double)world.Food / world.InitialFood) * 100;
         }
 
         private void InitializeGrammar(int maxLength, int maxDepth)
         {
-            var grammar = new SimpleSymbolicExpressionGrammar();
-            grammar.AddTerminalSymbols(new[] { Grammar.Move, Grammar.TurnLeft, Grammar.TurnRight });
-            grammar.AddSymbol(Grammar.Prog, 2, 2);
-
+            var grammar = Grammar.Create();
             Encoding = new SymbolicExpressionTreeEncoding(grammar, maxLength, maxDepth);
         }
 
@@ -113,7 +114,7 @@ namespace ArtificialLifePlugin
 
         private Creature CreateCreature()
         {
-            return new Creature(InitialEnergyParameter.Value.Value, InitialPosXParameter.Value.Value, InitialPosYParameter.Value.Value);
+            return new Creature(InitialEnergyParameter.Value.Value, InitialPosXParameter.Value.Value, InitialPosYParameter.Value.Value, InitialLookParameter.Value.Value);
         }
 
         private World CreateWorld()
@@ -126,3 +127,4 @@ namespace ArtificialLifePlugin
         }
     }
 }
+

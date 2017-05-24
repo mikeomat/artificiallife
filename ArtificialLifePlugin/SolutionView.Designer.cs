@@ -39,7 +39,7 @@ namespace ArtificialLifePlugin {
       this.groupBox.Size = new System.Drawing.Size(347, 232);
       this.groupBox.TabIndex = 3;
       this.groupBox.TabStop = false;
-      this.groupBox.Text = "Lawn mower solution";
+      this.groupBox.Text = "Artificial Life solution";
       // 
       // pictureBox
       // 

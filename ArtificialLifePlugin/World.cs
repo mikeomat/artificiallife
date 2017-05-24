@@ -17,6 +17,8 @@ namespace ArtificialLifePlugin
         [Storable]
         public int Food { get; set; }
         [Storable]
+        public int InitialFood { get; private set; }
+        [Storable]
         public List<Creature> History { get; set; }
 
         [StorableConstructor]
@@ -45,17 +47,18 @@ namespace ArtificialLifePlugin
 
         private void InitFood(IntMatrix matrix)
         {
-            for(int y = 0; y < matrix.Rows; y++)
+            for (int y = 0; y < matrix.Rows; y++)
             {
-                for(int x = 0; x < matrix.Columns; x++)
+                for (int x = 0; x < matrix.Columns; x++)
                 {
-                    if(matrix[y, x] > 0)
+                    if (matrix[y, x] > 0)
                     {
                         this[x, y] = WorldStatus.Food;
                         Food++;
                     }
                 }
             }
+            InitialFood = Food;
         }
 
         private void InitFood(int seed)
@@ -72,6 +75,7 @@ namespace ArtificialLifePlugin
                     }
                 }
             }
+            InitialFood = Food;
         }
 
         public WorldStatus this[int x, int y]

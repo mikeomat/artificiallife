@@ -103,7 +103,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ALEvaluatorExtension.cs" />
+    <Compile Include="ALInterpreterExtension.cs" />
     <Compile Include="Creature.cs" />
     <Compile Include="Grammar.cs" />
     <Compile Include="Interpreter.cs" />
@@ -115,6 +115,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Sensing.cs" />
     <Compile Include="Solution.cs" />
     <Compile Include="SolutionView.cs">
       <SubType>UserControl</SubType>

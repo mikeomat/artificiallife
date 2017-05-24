@@ -5,8 +5,6 @@ namespace ArtificialLifePlugin
     [StorableClass]
     public class Creature
     {
-        private int look;
-
         [Storable]
         public int Energy { get; set; }
         [Storable]
@@ -15,17 +13,10 @@ namespace ArtificialLifePlugin
         public int PosY { get; set; }
 
         [Storable]
-        public int Look
-        {
-            get
-            {
-                return look;
-            }
-            set
-            {
-                look = (value + 8) % 8;
-            }
-        }
+        public int Look { get; set; }
+
+        [Storable]
+        public int? Sense { get; set; }
 
         [StorableConstructor]
         public Creature(bool deserializing)
@@ -33,19 +24,16 @@ namespace ArtificialLifePlugin
 
         }
 
-        public Creature(int energy, int posX, int posY)
+        public Creature(int energy, int posX, int posY, int look)
         {
             Energy = energy;
             PosX = posX;
             PosY = posY;
-            Look = 3;
         }
 
         public Creature Copy()
         {
-            Creature copy = new Creature(Energy, PosX, PosY);
-            copy.Look = Look;
-            return copy;
+            return new Creature(Energy, PosX, PosY, Look);
         }
     }
 }
