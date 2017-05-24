@@ -73,7 +73,9 @@ namespace ArtificialLifePlugin
 
                 Sensing sensed = Sense(world, creature);
                 if ((node.Symbol.Name == Grammar.IfSenseEquals && sensed == sense) ||
-                    (node.Symbol.Name == Grammar.IfSenseGreater && sensed > sense))
+                    (node.Symbol.Name == Grammar.IfSenseNotEquals && sensed != sense) ||
+                    (node.Symbol.Name == Grammar.IfSenseGreater && sensed > sense) ||
+                    (node.Symbol.Name == Grammar.IfSenseLess && sensed < sense))
                 {
                     return Execute(node.GetSubtree(1), world, creature);
                 }

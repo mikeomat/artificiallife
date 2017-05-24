@@ -21,7 +21,7 @@ namespace ArtificialLifePlugin
           : base()
         {
             InitializeComponent();
-            pictureBox.Image = new Bitmap(400, 400);
+            pictureBox.Image = new Bitmap(1024, 1024);
         }
 
         protected override void OnContentChanged()

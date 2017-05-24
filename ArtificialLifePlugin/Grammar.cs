@@ -14,8 +14,9 @@ namespace ArtificialLifePlugin
         public static string TurnRight = "TurnRight";
 
         public static string IfSenseEquals = "IfSenseEquals";
-
+        public static string IfSenseNotEquals = "IfSenseNotEquals";
         public static string IfSenseGreater = "IfSenseGreater";
+        public static string IfSenseLess = "IfSenseLess";
 
         public static string Prog = "Prog";
 
@@ -45,39 +46,39 @@ namespace ArtificialLifePlugin
 
         private static void AddIf(ISymbolicExpressionGrammar grammar)
         {
-            var ifEqual = new SimpleSymbol(IfSenseEquals, "", 2, 3);
-            grammar.AddSymbol(ifEqual);
-            var ifGreater = new SimpleSymbol(IfSenseGreater, "", 2, 3);
-            grammar.AddSymbol(ifGreater);
-
-            foreach (var s in grammar.Symbols)
+            string[] ifSymbolNames = new[] { IfSenseEquals, IfSenseGreater, IfSenseNotEquals, IfSenseLess };
+            List<ISymbol> ifSymbols = new List<ISymbol>();
+            foreach (var ifSymbolName in ifSymbolNames)
             {
-                if (s is ProgramRootSymbol || s.Name == "Defun") continue;
+                var ifSymbol = new SimpleSymbol(ifSymbolName, "", 2, 3);
+                grammar.AddSymbol(ifSymbol);
+                ifSymbols.Add(ifSymbol);
+            }
 
-                if (s is StartSymbol || s.Name == Prog)
+            foreach (var ifSymbol in ifSymbols)
+            {
+                foreach (var currentSymbol in grammar.Symbols)
                 {
-                    grammar.AddAllowedChildSymbol(s, ifEqual);
-                    grammar.AddAllowedChildSymbol(s, ifGreater);
-                    if (s is StartSymbol) continue;
-                }
+                    if (currentSymbol is ProgramRootSymbol || currentSymbol.Name == "Defun") continue;
 
-                if (SensingValues.Contains(s.Name))
-                {
-                    grammar.AddAllowedChildSymbol(ifEqual, s, 0);
-                    grammar.RemoveAllowedChildSymbol(ifEqual, s, 1);
-                    grammar.RemoveAllowedChildSymbol(ifEqual, s, 2);
-                    grammar.AddAllowedChildSymbol(ifGreater, s, 0);
-                    grammar.RemoveAllowedChildSymbol(ifGreater, s, 1);
-                    grammar.RemoveAllowedChildSymbol(ifGreater, s, 2);
-                }
-                else
-                {
-                    grammar.AddAllowedChildSymbol(ifEqual, s, 1);
-                    grammar.AddAllowedChildSymbol(ifEqual, s, 2);
-                    grammar.RemoveAllowedChildSymbol(ifEqual, s, 0);
-                    grammar.AddAllowedChildSymbol(ifGreater, s, 1);
-                    grammar.AddAllowedChildSymbol(ifGreater, s, 2);
-                    grammar.RemoveAllowedChildSymbol(ifGreater, s, 0);
+                    if (currentSymbol is StartSymbol || currentSymbol.Name == Prog)
+                    {
+                        grammar.AddAllowedChildSymbol(currentSymbol, ifSymbol);
+                        if (currentSymbol is StartSymbol) continue;
+                    }
+
+                    if (SensingValues.Contains(currentSymbol.Name))
+                    {
+                        grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 0);
+                        grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 1);
+                        grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 2);
+                    }
+                    else
+                    {
+                        grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 1);
+                        grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 2);
+                        grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 0);
+                    }
                 }
             }
         }

@@ -8,10 +8,10 @@ namespace ArtificialLifePlugin
 {
     public enum Sensing
     {
+        Empty = -1,
         Food = 0,
         FoodSomewhere = 1,
         FoodLeft = 2,
-        FoodRight = 4,
-        Empty = -1
+        FoodRight = 4
     }
 }
