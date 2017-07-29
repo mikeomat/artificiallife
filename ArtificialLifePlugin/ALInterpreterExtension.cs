@@ -63,29 +63,94 @@ namespace ArtificialLifePlugin
                 {
                     creature.Energy--;
                 }
-                creature.Sense = null;
                 world.AddToHistory(creature);
             }
-            else if (node.Symbol.Name == Grammar.IfSenseEquals || node.Symbol.Name == Grammar.IfSenseGreater)
+            else if (node.Symbol.Name == Grammar.Sense)
             {
                 var symbolNode = node.GetSubtree(0);
-                Sensing sense = (Sensing)Enum.Parse(typeof(Sensing), symbolNode.Symbol.Name);
+                Register register = (Register)Enum.Parse(typeof(Register), symbolNode.Symbol.Name);
 
-                Sensing sensed = Sense(world, creature);
-                if ((node.Symbol.Name == Grammar.IfSenseEquals && sensed == sense) ||
-                    (node.Symbol.Name == Grammar.IfSenseNotEquals && sensed != sense) ||
-                    (node.Symbol.Name == Grammar.IfSenseGreater && sensed > sense) ||
-                    (node.Symbol.Name == Grammar.IfSenseLess && sensed < sense))
+                Sensing sense = Sense(world, creature);
+
+                if (creature.ReadRegister(register) == (int)sense)
                 {
-                    return Execute(node.GetSubtree(1), world, creature);
+                    creature.WriteRegister(register, (int)Sensing.Same);
                 }
-                else if (node.SubtreeCount == 3)
+                else
+                {
+                    creature.WriteRegister(register, (int)sense);
+                }
+
+            }
+            else if (Grammar.IfSymbolNames.Contains(node.Symbol.Name))
+            {
+                int? firstArgument = GetArgumentValue(node.GetSubtree(0), creature);
+                int? secondArgument = GetArgumentValue(node.GetSubtree(1), creature);
+
+                if ((node.Symbol.Name == Grammar.IfEquals && firstArgument == secondArgument) ||
+                    (node.Symbol.Name == Grammar.IfNotEquals && firstArgument != secondArgument) ||
+                    (node.Symbol.Name == Grammar.IfGreater && firstArgument > secondArgument) ||
+                    (node.Symbol.Name == Grammar.IfLess && firstArgument < secondArgument))
                 {
                     return Execute(node.GetSubtree(2), world, creature);
+                }
+                else if (node.SubtreeCount == 4)
+                {
+                    return Execute(node.GetSubtree(3), world, creature);
+                }
+            }
+            else if (node.Symbol.Name == Grammar.Increase || node.Symbol.Name == Grammar.Decrease)
+            {
+                Register register = GetRegister(node.GetSubtree(0));
+                var value = creature.ReadRegister(register);
+                if (node.Symbol.Name == Grammar.Increase)
+                {
+                    creature.WriteRegister(register, value++);
+                }
+                else
+                {
+                    creature.WriteRegister(register, value--);
+                }
+            }
+            else if (node.Symbol.Name == Grammar.ShiftLeft || node.Symbol.Name == Grammar.ShiftRight)
+            {
+                Register register = GetRegister(node.GetSubtree(0));
+                var value = creature.ReadRegister(register);
+                if (node.Symbol.Name == Grammar.ShiftLeft)
+                {
+                    creature.WriteRegister(register, value<<1);
+                }
+                else
+                {
+                    creature.WriteRegister(register, value>>1);
                 }
             }
 
             return world;
+        }
+
+        private static int? GetArgumentValue(ISymbolicExpressionTreeNode node, Creature creature)
+        {
+            if (Grammar.SensingValues.Contains(node.Symbol.Name))
+            {
+                return (int)GetSensing(node);
+            }
+            else if (Grammar.RegisterValues.Contains(node.Symbol.Name))
+            {
+                Register register = GetRegister(node);
+                return creature.ReadRegister(register);
+            }
+
+            throw new ArgumentException();
+        }
+
+        public static Sensing GetSensing(ISymbolicExpressionTreeNode node)
+        {
+            return (Sensing)Enum.Parse(typeof(Sensing), node.Symbol.Name);
+        }
+        public static Register GetRegister(ISymbolicExpressionTreeNode node)
+        {
+            return (Register)Enum.Parse(typeof(Register), node.Symbol.Name);
         }
 
         private static Sensing Sense(World world, Creature creature)
@@ -106,21 +171,6 @@ namespace ArtificialLifePlugin
             else if (world[rightPos.Item1, rightPos.Item2] == WorldStatus.Food)
             {
                 sense = Sensing.FoodRight;
-            }
-            else
-            {
-                int look = GetLook(creature.Look + 2);
-                int leftLook = GetLook(creature.Look - 1);
-                while (look != leftLook)
-                {
-                    var pos = GetLookPosition(world, creature.PosX, creature.PosY, look);
-                    if (world[pos.Item1, pos.Item2] == WorldStatus.Food)
-                    {
-                        sense = Sensing.FoodSomewhere;
-                        break;
-                    }
-                    look = GetLook(look + 1);
-                }
             }
 
             return sense;

@@ -107,6 +107,7 @@
     <Compile Include="Creature.cs" />
     <Compile Include="Grammar.cs" />
     <Compile Include="Interpreter.cs" />
+    <Compile Include="Register.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Problem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

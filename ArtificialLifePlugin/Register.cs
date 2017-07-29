@@ -6,12 +6,8 @@ using System.Threading.Tasks;
 
 namespace ArtificialLifePlugin
 {
-    public enum Sensing
+    public enum Register
     {
-        Empty = -1,
-        Food = 0,
-        Same = 1,
-        FoodLeft = 2,
-        FoodRight = 4
+        AX, BX, CX
     }
 }

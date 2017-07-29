@@ -15,8 +15,7 @@ namespace ArtificialLifePlugin
         [Storable]
         public int Look { get; set; }
 
-        [Storable]
-        public int? Sense { get; set; }
+        public int?[] Register { get; set; }
 
         [StorableConstructor]
         public Creature(bool deserializing)
@@ -29,11 +28,22 @@ namespace ArtificialLifePlugin
             Energy = energy;
             PosX = posX;
             PosY = posY;
+            Register = new int?[3];
         }
 
         public Creature Copy()
         {
             return new Creature(Energy, PosX, PosY, Look);
+        }
+
+        public int? ReadRegister(Register register)
+        {
+            return this.Register[(int)register];
+        }
+
+        public void WriteRegister(Register register, int? value)
+        {
+            this.Register[(int)register] = value;
         }
     }
 }

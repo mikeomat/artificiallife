@@ -13,14 +13,23 @@ namespace ArtificialLifePlugin
         public static string TurnLeft = "TurnLeft";
         public static string TurnRight = "TurnRight";
 
-        public static string IfSenseEquals = "IfSenseEquals";
-        public static string IfSenseNotEquals = "IfSenseNotEquals";
-        public static string IfSenseGreater = "IfSenseGreater";
-        public static string IfSenseLess = "IfSenseLess";
+        public static string IfEquals = "IfEquals";
+        public static string IfNotEquals = "IfNotEquals";
+        public static string IfGreater = "IfGreater";
+        public static string IfLess = "IfLess";
+        public static string[] IfSymbolNames = { IfEquals, IfNotEquals, IfGreater, IfLess };
+
+        public static string Increase = "Increase";
+        public static string Decrease = "Decrease";
+        public static string ShiftLeft = "ShiftLeft";
+        public static string ShiftRight = "ShiftRight";
+
+        public static string Sense = "Sense";
 
         public static string Prog = "Prog";
 
         public static string[] SensingValues = Enum.GetNames(typeof(Sensing));
+        public static string[] RegisterValues = Enum.GetNames(typeof(Register));
 
 
         public static ISymbolicExpressionGrammar Create()
@@ -30,10 +39,25 @@ namespace ArtificialLifePlugin
             grammar.AddTerminalSymbols(new[] { Move, TurnLeft, TurnRight });
             grammar.AddSymbol(Prog, 2, 2);
             AddSensingValues(grammar);
+            AddRegisterValues(grammar);
+            AddWithRegisterArgument(Increase, grammar);
+            AddWithRegisterArgument(Decrease, grammar);
+            AddWithRegisterArgument(ShiftLeft, grammar);
+            AddWithRegisterArgument(ShiftRight, grammar);
+            AddWithRegisterArgument(Sense, grammar);
             AddIf(grammar);
-
             return grammar;
         }
+
+        private static void AddRegisterValues(ISymbolicExpressionGrammar grammar)
+        {
+            foreach (var register in RegisterValues)
+            {
+                ISymbol symbol = new SimpleSymbol(register, 0);
+                grammar.AddSymbol(symbol);
+            }
+        }
+
         private static void AddSensingValues(ISymbolicExpressionGrammar grammar)
         {
             foreach (var sensing in SensingValues)
@@ -43,14 +67,34 @@ namespace ArtificialLifePlugin
             }
         }
 
+        private static void AddWithRegisterArgument(string symbolName, ISymbolicExpressionGrammar grammar)
+        {
+            ISymbol symbol = new SimpleSymbol(symbolName, "", 1, 1);
+            grammar.AddSymbol(symbol);
+            foreach (var currentSymbol in grammar.Symbols)
+            {
+                if (currentSymbol is ProgramRootSymbol || currentSymbol.Name == "Defun") continue;
+
+                if (currentSymbol is StartSymbol || currentSymbol.Name == Prog)
+                {
+                    grammar.AddAllowedChildSymbol(currentSymbol, symbol);
+                    if (currentSymbol is StartSymbol) continue;
+                }
+
+                if (RegisterValues.Contains(currentSymbol.Name))
+                {
+                    grammar.AddAllowedChildSymbol(symbol, currentSymbol, 0);
+                }
+            }
+        }
+
 
         private static void AddIf(ISymbolicExpressionGrammar grammar)
         {
-            string[] ifSymbolNames = new[] { IfSenseEquals, IfSenseGreater, IfSenseNotEquals, IfSenseLess };
             List<ISymbol> ifSymbols = new List<ISymbol>();
-            foreach (var ifSymbolName in ifSymbolNames)
+            foreach (var ifSymbolName in IfSymbolNames)
             {
-                var ifSymbol = new SimpleSymbol(ifSymbolName, "", 2, 3);
+                var ifSymbol = new SimpleSymbol(ifSymbolName, "", 3, 4);
                 grammar.AddSymbol(ifSymbol);
                 ifSymbols.Add(ifSymbol);
             }
@@ -67,17 +111,26 @@ namespace ArtificialLifePlugin
                         if (currentSymbol is StartSymbol) continue;
                     }
 
-                    if (SensingValues.Contains(currentSymbol.Name))
+                    if (RegisterValues.Contains(currentSymbol.Name))
                     {
                         grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 0);
-                        grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 1);
-                        grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 2);
+                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 1);
+                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 2);
+                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 3);
+                    }
+                    else if (SensingValues.Contains(currentSymbol.Name))
+                    {
+                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 0);
+                        grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 1);
+                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 2);
+                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 3);
                     }
                     else
                     {
-                        grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 1);
                         grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 2);
-                        grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 0);
+                        grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 3);
+                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 0);
+                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 1);
                     }
                 }
             }
