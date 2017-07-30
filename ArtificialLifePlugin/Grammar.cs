@@ -111,26 +111,15 @@ namespace ArtificialLifePlugin
                         if (currentSymbol is StartSymbol) continue;
                     }
 
-                    if (RegisterValues.Contains(currentSymbol.Name))
+                    else if (SensingValues.Contains(currentSymbol.Name) || RegisterValues.Contains(currentSymbol.Name))
                     {
                         grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 0);
-                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 1);
-                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 2);
-                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 3);
-                    }
-                    else if (SensingValues.Contains(currentSymbol.Name))
-                    {
-                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 0);
                         grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 1);
-                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 2);
-                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 3);
                     }
                     else
                     {
                         grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 2);
                         grammar.AddAllowedChildSymbol(ifSymbol, currentSymbol, 3);
-                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 0);
-                        //grammar.RemoveAllowedChildSymbol(ifSymbol, currentSymbol, 1);
                     }
                 }
             }

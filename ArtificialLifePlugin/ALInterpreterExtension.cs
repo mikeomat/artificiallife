@@ -58,8 +58,9 @@ namespace ArtificialLifePlugin
                 {
                     world[creature.PosX, creature.PosY] = WorldStatus.Eaten;
                     world.Food--;
+                    creature.Energy++;
                 }
-                else
+                else if(world[creature.PosX, creature.PosY] != WorldStatus.Eaten)
                 {
                     creature.Energy--;
                 }
@@ -84,8 +85,8 @@ namespace ArtificialLifePlugin
             }
             else if (Grammar.IfSymbolNames.Contains(node.Symbol.Name))
             {
-                int? firstArgument = GetArgumentValue(node.GetSubtree(0), creature);
-                int? secondArgument = GetArgumentValue(node.GetSubtree(1), creature);
+                int firstArgument = GetArgumentValue(node.GetSubtree(0), creature);
+                int secondArgument = GetArgumentValue(node.GetSubtree(1), creature);
 
                 if ((node.Symbol.Name == Grammar.IfEquals && firstArgument == secondArgument) ||
                     (node.Symbol.Name == Grammar.IfNotEquals && firstArgument != secondArgument) ||
@@ -129,7 +130,7 @@ namespace ArtificialLifePlugin
             return world;
         }
 
-        private static int? GetArgumentValue(ISymbolicExpressionTreeNode node, Creature creature)
+        private static int GetArgumentValue(ISymbolicExpressionTreeNode node, Creature creature)
         {
             if (Grammar.SensingValues.Contains(node.Symbol.Name))
             {

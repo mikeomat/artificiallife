@@ -76,17 +76,36 @@ namespace ArtificialLifePlugin
         {
             const string bestSolutionResultName = "Best Solution";
             const string bestSolutionTreeResultName = "Best Solution Tree";
-            var bestQuality = Maximization ? qualities.Max() : qualities.Min();
-            var bestIdx = Array.IndexOf(qualities, bestQuality);
+            const string secondBestSolutionResultName = "Second Best Solution";
+            const string secondBestSolutionTreeResultName = "Second Best Solution Tree";
+            const string thirdBestSolutionResultName = "Third Best Solution";
+            const string thirdBestSolutionTreeResultName = "Third Best Solution Tree";
+            var bestQuality = qualities.Max();
+
+            if(results.ContainsKey(bestSolutionResultName) && ((Solution)(results[bestSolutionResultName].Value)).Quality >= bestQuality)
+            {
+                return;
+            }
+
+            var bestIdxs = qualities.Select((q, idx) => new { quality = q, index = idx }).Where(q => q.quality == bestQuality).Select(q => q.index).ToList();
+            var bestIdx = trees.Select((t, idx) => new { tree = t, index = idx }).Where(t => bestIdxs.Contains(t.index)).OrderBy(t => t.tree.Length).Select(t => t.index).FirstOrDefault();
 
             World world = ExecuteWorld(trees[bestIdx]);
             if (!results.ContainsKey(bestSolutionResultName))
             {
                 results.Add(new Result(bestSolutionResultName, new Solution(trees[bestIdx], WorldHeightParameter.Value.Value, WorldWidthParameter.Value.Value, bestQuality, world)));
                 results.Add(new Result(bestSolutionTreeResultName, trees[bestIdx]));
+                results.Add(new Result(secondBestSolutionResultName, (Solution)null));
+                results.Add(new Result(secondBestSolutionTreeResultName, (ISymbolicExpressionTree)null));
+                results.Add(new Result(thirdBestSolutionResultName, (Solution)null));
+                results.Add(new Result(thirdBestSolutionTreeResultName, (ISymbolicExpressionTree)null));
             }
-            else if (((Solution)(results[bestSolutionResultName].Value)).Quality < qualities[bestIdx])
+            else if (((Solution)(results[bestSolutionResultName].Value)).Quality < bestQuality)
             {
+                results[thirdBestSolutionResultName].Value = results[secondBestSolutionResultName].Value;
+                results[thirdBestSolutionTreeResultName].Value = results[secondBestSolutionTreeResultName].Value;
+                results[secondBestSolutionResultName].Value = results[bestSolutionResultName].Value;
+                results[secondBestSolutionTreeResultName].Value = results[bestSolutionTreeResultName].Value;
                 results[bestSolutionResultName].Value = new Solution(trees[bestIdx], WorldHeightParameter.Value.Value, WorldWidthParameter.Value.Value, bestQuality, world);
                 results[bestSolutionTreeResultName].Value = trees[bestIdx];
             }
@@ -95,7 +114,11 @@ namespace ArtificialLifePlugin
         public override double Evaluate(ISymbolicExpressionTree tree, IRandom random)
         {
             World world = ExecuteWorld(tree);
-            return (1.0 - (double)world.Food / world.InitialFood) * 100;
+            int initialEnergy = InitialEnergyParameter.Value.Value;
+            Creature creature = world.History.Last();
+            double foodRatio = 1.0 - (double)world.Food / world.InitialFood;
+            double energyRatio = (double)creature.Energy / (world.InitialFood + initialEnergy);
+            return (energyRatio + foodRatio) * 100 / 2.0;
         }
 
         private void InitializeGrammar(int maxLength, int maxDepth)
