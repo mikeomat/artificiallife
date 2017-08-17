@@ -38,8 +38,8 @@ namespace ArtificialLifePlugin
 
             grammar.AddTerminalSymbols(new[] { Move, TurnLeft, TurnRight });
             grammar.AddSymbol(Prog, 2, 2);
-            AddSensingValues(grammar);
-            AddRegisterValues(grammar);
+            AddTerminalSymbols(grammar, SensingValues);
+            AddTerminalSymbols(grammar, RegisterValues);
             AddWithRegisterArgument(Increase, grammar);
             AddWithRegisterArgument(Decrease, grammar);
             AddWithRegisterArgument(ShiftLeft, grammar);
@@ -49,20 +49,11 @@ namespace ArtificialLifePlugin
             return grammar;
         }
 
-        private static void AddRegisterValues(ISymbolicExpressionGrammar grammar)
+        private static void AddTerminalSymbols(ISymbolicExpressionGrammar grammar, string[] values)
         {
-            foreach (var register in RegisterValues)
+            foreach (var val in values)
             {
-                ISymbol symbol = new SimpleSymbol(register, 0);
-                grammar.AddSymbol(symbol);
-            }
-        }
-
-        private static void AddSensingValues(ISymbolicExpressionGrammar grammar)
-        {
-            foreach (var sensing in SensingValues)
-            {
-                ISymbol symbol = new SimpleSymbol(sensing, 0);
+                ISymbol symbol = new SimpleSymbol(val, 0);
                 grammar.AddSymbol(symbol);
             }
         }

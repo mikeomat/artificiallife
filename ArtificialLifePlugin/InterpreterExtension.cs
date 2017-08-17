@@ -7,23 +7,23 @@ using System.Threading.Tasks;
 
 namespace ArtificialLifePlugin
 {
-    internal static partial class ALInterpreterExtension
+    internal static partial class InterpreterExtension
     {
         internal static void Execute(this ISymbolicExpressionTree tree, World world, Creature creature)
         {
-            int maxLoops = 1000;
+            const int maxLoops = 1000;
 
             world.AddToHistory(creature);
 
             int cnt = 0;
             do
             {
-                world = Execute(tree.Root, world, creature);
+                world = ExecuteNode(tree.Root, world, creature);
                 cnt++;
             } while (world.Food > 0 && creature.Energy > 0 && cnt < maxLoops);
         }
 
-        private static World Execute(ISymbolicExpressionTreeNode node, World world, Creature creature)
+        private static World ExecuteNode(ISymbolicExpressionTreeNode node, World world, Creature creature)
         {
             if (creature.Energy <= 0)
             {
@@ -32,12 +32,12 @@ namespace ArtificialLifePlugin
 
             if (node.Symbol is ProgramRootSymbol || node.Symbol is StartSymbol)
             {
-                return Execute(node.GetSubtree(0), world, creature);
+                return ExecuteNode(node.GetSubtree(0), world, creature);
             }
             else if (node.Symbol.Name == Grammar.Prog)
             {
-                world = Execute(node.GetSubtree(0), world, creature);
-                return Execute(node.GetSubtree(1), world, creature);
+                world = ExecuteNode(node.GetSubtree(0), world, creature);
+                return ExecuteNode(node.GetSubtree(1), world, creature);
             }
 
             if (node.Symbol.Name == Grammar.TurnLeft)
@@ -73,9 +73,9 @@ namespace ArtificialLifePlugin
 
                 Sensing sense = Sense(world, creature);
 
-                if (creature.ReadRegister(register) == (int)sense)
+                if (world.RepeatSense && creature.ReadRegister(register) == (int)sense)
                 {
-                    creature.WriteRegister(register, (int)Sensing.Same);
+                    creature.WriteRegister(register, (int)Sensing.Repeat);
                 }
                 else
                 {
@@ -93,11 +93,11 @@ namespace ArtificialLifePlugin
                     (node.Symbol.Name == Grammar.IfGreater && firstArgument > secondArgument) ||
                     (node.Symbol.Name == Grammar.IfLess && firstArgument < secondArgument))
                 {
-                    return Execute(node.GetSubtree(2), world, creature);
+                    return ExecuteNode(node.GetSubtree(2), world, creature);
                 }
                 else if (node.SubtreeCount == 4)
                 {
-                    return Execute(node.GetSubtree(3), world, creature);
+                    return ExecuteNode(node.GetSubtree(3), world, creature);
                 }
             }
             else if (node.Symbol.Name == Grammar.Increase || node.Symbol.Name == Grammar.Decrease)

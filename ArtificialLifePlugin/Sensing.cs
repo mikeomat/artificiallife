@@ -10,7 +10,7 @@ namespace ArtificialLifePlugin
     {
         Empty = -1,
         Food = 0,
-        Same = 1,
+        Repeat = 1,
         FoodLeft = 2,
         FoodRight = 4
     }

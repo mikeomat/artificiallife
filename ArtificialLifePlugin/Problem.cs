@@ -6,13 +6,14 @@ using HeuristicLab.Optimization;
 using HeuristicLab.Parameters;
 using HeuristicLab.Persistence.Default.CompositeSerializers.Storable;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ArtificialLifePlugin
 {
     [StorableClass]
     [Creatable(CreatableAttribute.Categories.GeneticProgrammingProblems, Priority = 160)]
-    [Item("Artificial Life Problem", "The artificial life problem.")]
+    [Item("Clever Creatures Problem", "The Clever Creatures problem.")]
     public class Problem : SymbolicExpressionTreeProblem
     {
         private const string WorldWidthParameterName = "WorldWidth";
@@ -23,17 +24,44 @@ namespace ArtificialLifePlugin
         private const string InitialPosXParameterName = "InitialPosX";
         private const string InitialPosYParameterName = "InitialPosY";
         private const string InitialLookParameterName = "InitialLook";
+        private const string WorldCountParameterName = "WorldCount";
         private const string WorldParameterName = "World";
+        private const string World2ParameterName = "World2";
+        private const string World3ParameterName = "World3";
+        private const string World4ParameterName = "World4";
+        private const string InitialPosX2ParameterName = "InitialPosX2";
+        private const string InitialPosY2ParameterName = "InitialPosY2";
+        private const string InitialLook2ParameterName = "InitialLook2";
+        private const string InitialPosX3ParameterName = "InitialPosX3";
+        private const string InitialPosY3ParameterName = "InitialPosY3";
+        private const string InitialLook3ParameterName = "InitialLook3";
+        private const string InitialPosX4ParameterName = "InitialPosX4";
+        private const string InitialPosY4ParameterName = "InitialPosY4";
+        private const string InitialLook4ParameterName = "InitialLook4";
 
         public IFixedValueParameter<IntValue> WorldWidthParameter => (IFixedValueParameter<IntValue>)Parameters[WorldWidthParameterName];
         public IFixedValueParameter<IntValue> WorldHeightParameter => (IFixedValueParameter<IntValue>)Parameters[WorldHeightParameterName];
+
+        public ValueParameter<IntValue> WorldCountParameter => (ValueParameter<IntValue>)Parameters[WorldCountParameterName];
         public ValueParameter<IntMatrix> WorldParameter => (ValueParameter<IntMatrix>)Parameters[WorldParameterName];
+        public ValueParameter<IntMatrix> World2Parameter => (ValueParameter<IntMatrix>)Parameters[World2ParameterName];
+        public ValueParameter<IntMatrix> World3Parameter => (ValueParameter<IntMatrix>)Parameters[World3ParameterName];
+        public ValueParameter<IntMatrix> World4Parameter => (ValueParameter<IntMatrix>)Parameters[World4ParameterName];
         public IFixedValueParameter<BoolValue> RandomWorldParameter => (IFixedValueParameter<BoolValue>)Parameters[RandomWorldParameterName];
         public IFixedValueParameter<IntValue> RandomWorldSeedParameter => (IFixedValueParameter<IntValue>)Parameters[RandomWorldSeedParameterName];
         public IFixedValueParameter<IntValue> InitialEnergyParameter => (IFixedValueParameter<IntValue>)Parameters[InitialEnergyParameterName];
         public IFixedValueParameter<IntValue> InitialPosXParameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosXParameterName];
         public IFixedValueParameter<IntValue> InitialPosYParameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosYParameterName];
         public IFixedValueParameter<IntValue> InitialLookParameter => (IFixedValueParameter<IntValue>)Parameters[InitialLookParameterName];
+        public IFixedValueParameter<IntValue> InitialPosX2Parameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosX2ParameterName];
+        public IFixedValueParameter<IntValue> InitialPosY2Parameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosY2ParameterName];
+        public IFixedValueParameter<IntValue> InitialLook2Parameter => (IFixedValueParameter<IntValue>)Parameters[InitialLook2ParameterName];
+        public IFixedValueParameter<IntValue> InitialPosX3Parameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosX3ParameterName];
+        public IFixedValueParameter<IntValue> InitialPosY3Parameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosY3ParameterName];
+        public IFixedValueParameter<IntValue> InitialLook3Parameter => (IFixedValueParameter<IntValue>)Parameters[InitialLook3ParameterName];
+        public IFixedValueParameter<IntValue> InitialPosX4Parameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosX4ParameterName];
+        public IFixedValueParameter<IntValue> InitialPosY4Parameter => (IFixedValueParameter<IntValue>)Parameters[InitialPosY4ParameterName];
+        public IFixedValueParameter<IntValue> InitialLook4Parameter => (IFixedValueParameter<IntValue>)Parameters[InitialLook4ParameterName];
         public override bool Maximization => true;
 
         #region item cloning and persistence
@@ -57,10 +85,30 @@ namespace ArtificialLifePlugin
             Parameters.Add(new FixedValueParameter<BoolValue>(RandomWorldParameterName, "Random world.", new BoolValue(true)));
             Parameters.Add(new FixedValueParameter<IntValue>(RandomWorldSeedParameterName, "Random world seed", new IntValue(1234)));
             Parameters.Add(new FixedValueParameter<IntValue>(InitialEnergyParameterName, "Initial Energy of creature", new IntValue(5)));
+
             Parameters.Add(new FixedValueParameter<IntValue>(InitialPosXParameterName, "Initial PosX of creature", new IntValue(0)));
             Parameters.Add(new FixedValueParameter<IntValue>(InitialPosYParameterName, "Initial PosY of creature", new IntValue(0)));
             Parameters.Add(new FixedValueParameter<IntValue>(InitialLookParameterName, "Initial Look of creature values from 0 to 7 starting with left top clockwise", new IntValue(3)));
-            Parameters.Add(new ValueParameter<IntMatrix>(WorldParameterName, "Food within world", new IntMatrix(25, 25)));
+
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialPosX2ParameterName, "Initial PosX of creature", new IntValue(0)));
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialPosY2ParameterName, "Initial PosY of creature", new IntValue(0)));
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialLook2ParameterName, "Initial Look of creature values from 0 to 7 starting with left top clockwise", new IntValue(3)));
+
+
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialPosX3ParameterName, "Initial PosX of creature", new IntValue(0)));
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialPosY3ParameterName, "Initial PosY of creature", new IntValue(0)));
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialLook3ParameterName, "Initial Look of creature values from 0 to 7 starting with left top clockwise", new IntValue(3)));
+
+
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialPosX4ParameterName, "Initial PosX of creature", new IntValue(0)));
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialPosY4ParameterName, "Initial PosY of creature", new IntValue(0)));
+            Parameters.Add(new FixedValueParameter<IntValue>(InitialLook4ParameterName, "Initial Look of creature values from 0 to 7 starting with left top clockwise", new IntValue(3)));
+
+            Parameters.Add(new FixedValueParameter<IntValue>(WorldCountParameterName, "Count of different Worlds", new IntValue(1)));
+            Parameters.Add(new ValueParameter<IntMatrix>(WorldParameterName, "Food within world 1", new IntMatrix(25, 25)));
+            Parameters.Add(new ValueParameter<IntMatrix>(World2ParameterName, "Food within world 2", new IntMatrix(25, 25)));
+            Parameters.Add(new ValueParameter<IntMatrix>(World3ParameterName, "Food within world 3", new IntMatrix(25, 25)));
+            Parameters.Add(new ValueParameter<IntMatrix>(World4ParameterName, "Food within world 4", new IntMatrix(25, 25)));
 
             EventHandler widthHeight = (s, e) =>
             {
@@ -76,39 +124,64 @@ namespace ArtificialLifePlugin
         {
             const string bestSolutionResultName = "Best Solution";
             const string bestSolutionTreeResultName = "Best Solution Tree";
+            const string bestSolutionTreeLengthName = "Best Solution Tree Length";
             const string secondBestSolutionResultName = "Second Best Solution";
             const string secondBestSolutionTreeResultName = "Second Best Solution Tree";
+            const string secondBestSolutionTreeLengthName = "Second Best Solution Tree Length";
             const string thirdBestSolutionResultName = "Third Best Solution";
             const string thirdBestSolutionTreeResultName = "Third Best Solution Tree";
+            const string thirdBestSolutionTreeLengthName = "Third Best Solution Tree Length";
             var bestQuality = qualities.Max();
 
-            if(results.ContainsKey(bestSolutionResultName) && ((Solution)(results[bestSolutionResultName].Value)).Quality >= bestQuality)
-            {
-                return;
-            }
+            //if (results.ContainsKey(thirdBestSolutionResultName) && ((Solution)(results[thirdBestSolutionResultName].Value)).Quality >= bestQuality && ((Solution)(results[thirdBestSolutionResultName].Value)) >= bestQuality)
+            //{
+            //    return;
+            //}
 
-            var bestIdxs = qualities.Select((q, idx) => new { quality = q, index = idx }).Where(q => q.quality == bestQuality).Select(q => q.index).ToList();
-            var bestIdx = trees.Select((t, idx) => new { tree = t, index = idx }).Where(t => bestIdxs.Contains(t.index)).OrderBy(t => t.tree.Length).Select(t => t.index).FirstOrDefault();
+            //var bestQualityIdxs = qualities.Select((q, idx) => new { quality = q, index = idx }).OrderByDescending(q => q.quality).Select(q => q.index).ToList();
+            var bestIdxs = trees.Distinct().Select((t, idx) => new { tree = t, index = idx, quality = qualities[idx] })
+                                .OrderByDescending(t => t.quality).ThenBy(t => t.tree.Length).Select(t => t.index).Take(3).ToArray();
 
-            World world = ExecuteWorld(trees[bestIdx]);
+            var solutions = bestIdxs.Select(i => CreateSolution(trees[i], qualities[i], ExecuteWorld(trees[i]))).ToList();
+
             if (!results.ContainsKey(bestSolutionResultName))
             {
-                results.Add(new Result(bestSolutionResultName, new Solution(trees[bestIdx], WorldHeightParameter.Value.Value, WorldWidthParameter.Value.Value, bestQuality, world)));
-                results.Add(new Result(bestSolutionTreeResultName, trees[bestIdx]));
-                results.Add(new Result(secondBestSolutionResultName, (Solution)null));
-                results.Add(new Result(secondBestSolutionTreeResultName, (ISymbolicExpressionTree)null));
-                results.Add(new Result(thirdBestSolutionResultName, (Solution)null));
-                results.Add(new Result(thirdBestSolutionTreeResultName, (ISymbolicExpressionTree)null));
+                results.Add(new Result(bestSolutionResultName, solutions[0]));
+                results.Add(new Result(bestSolutionTreeResultName, solutions[0].Tree));
+                results.Add(new Result(bestSolutionTreeLengthName, new IntValue(solutions[0].Tree.Length)));
+                results.Add(new Result(secondBestSolutionResultName, solutions[1]));
+                results.Add(new Result(secondBestSolutionTreeResultName, solutions[1].Tree));
+                results.Add(new Result(secondBestSolutionTreeLengthName, new IntValue(solutions[1].Tree.Length)));
+                results.Add(new Result(thirdBestSolutionResultName, solutions[2]));
+                results.Add(new Result(thirdBestSolutionTreeResultName, solutions[2].Tree));
+                results.Add(new Result(thirdBestSolutionTreeLengthName, new IntValue(solutions[2].Tree.Length)));
             }
-            else if (((Solution)(results[bestSolutionResultName].Value)).Quality < bestQuality)
+            else
             {
-                results[thirdBestSolutionResultName].Value = results[secondBestSolutionResultName].Value;
-                results[thirdBestSolutionTreeResultName].Value = results[secondBestSolutionTreeResultName].Value;
-                results[secondBestSolutionResultName].Value = results[bestSolutionResultName].Value;
-                results[secondBestSolutionTreeResultName].Value = results[bestSolutionTreeResultName].Value;
-                results[bestSolutionResultName].Value = new Solution(trees[bestIdx], WorldHeightParameter.Value.Value, WorldWidthParameter.Value.Value, bestQuality, world);
-                results[bestSolutionTreeResultName].Value = trees[bestIdx];
+                solutions.AddRange(new[] { CreateSolution(((Solution)results[bestSolutionResultName].Value)),
+                                           CreateSolution(((Solution)results[secondBestSolutionResultName].Value)),
+                                           CreateSolution((Solution)results[thirdBestSolutionResultName].Value)});
+                solutions = solutions.Distinct(new LambdaComparer<Solution>((s1, s2) => s1.Tree.Length == s2.Tree.Length && s1.Quality == s2.Quality))
+                    .OrderByDescending(s => s.Quality).ThenBy(s => s.Tree.Length).ToList();
+                results[bestSolutionResultName].Value = solutions[0];
+                results[bestSolutionTreeResultName].Value = solutions[0].Tree;
+                results[bestSolutionTreeLengthName].Value = new IntValue(solutions[0].Tree.Length);
+                results[secondBestSolutionResultName].Value = solutions[1];
+                results[secondBestSolutionTreeResultName].Value = solutions[1].Tree;
+                results[secondBestSolutionTreeLengthName].Value = new IntValue(solutions[1].Tree.Length);
+                results[thirdBestSolutionResultName].Value = solutions[2];
+                results[thirdBestSolutionTreeResultName].Value = solutions[2].Tree;
+                results[thirdBestSolutionTreeLengthName].Value = new IntValue(solutions[2].Tree.Length);
             }
+        }
+
+        private Solution CreateSolution(ISymbolicExpressionTree tree, double quality, World world)
+        {
+            return new Solution(tree, WorldHeightParameter.Value.Value, WorldWidthParameter.Value.Value, quality, world);
+        }
+        private Solution CreateSolution(Solution solution)
+        {
+            return new Solution(solution.Tree, solution.Height, solution.Width, solution.Quality, solution.World);
         }
 
         public override double Evaluate(ISymbolicExpressionTree tree, IRandom random)
@@ -129,24 +202,100 @@ namespace ArtificialLifePlugin
 
         private World ExecuteWorld(ISymbolicExpressionTree tree)
         {
-            World world = CreateWorld();
-            Creature creature = CreateCreature();
+            int seed = tree.GetHashCode();
+            World world = CreateWorld(seed);
+            Creature creature = CreateCreature(seed);
             tree.Execute(world, creature);
             return world;
         }
 
-        private Creature CreateCreature()
+        private Creature CreateCreature(int seed)
         {
-            return new Creature(InitialEnergyParameter.Value.Value, InitialPosXParameter.Value.Value, InitialPosYParameter.Value.Value, InitialLookParameter.Value.Value);
+            Random rand = new Random(seed);
+            int posIdx = rand.Next(0, WorldCountParameter.Value.Value);
+
+            int posX = 0, posY = 0, look = 0;
+            if (WorldCountParameter.Value.Value <= 1 || posIdx == 0)
+            {
+                posX = InitialPosXParameter.Value.Value;
+                posY = InitialPosYParameter.Value.Value;
+                look = InitialLookParameter.Value.Value;
+            }
+            else if (posIdx == 1)
+            {
+                posX = InitialPosX2Parameter.Value.Value;
+                posY = InitialPosY2Parameter.Value.Value;
+                look = InitialLook2Parameter.Value.Value;
+            }
+            else if (posIdx == 2)
+            {
+                posX = InitialPosX3Parameter.Value.Value;
+                posY = InitialPosY3Parameter.Value.Value;
+                look = InitialLook3Parameter.Value.Value;
+            }
+            else if (posIdx == 3)
+            {
+                posX = InitialPosX4Parameter.Value.Value;
+                posY = InitialPosY4Parameter.Value.Value;
+                look = InitialLook4Parameter.Value.Value;
+            }
+
+            return new Creature(InitialEnergyParameter.Value.Value, posX, posY, look);
         }
 
-        private World CreateWorld()
+        private World CreateWorld(int seed)
         {
             if (RandomWorldParameter.Value.Value)
             {
                 return new World(WorldWidthParameter.Value.Value, WorldHeightParameter.Value.Value, RandomWorldSeedParameter.Value.Value);
             }
-            return new World(WorldWidthParameter.Value.Value, WorldHeightParameter.Value.Value, WorldParameter.Value);
+
+            IntMatrix world = null;
+            if (WorldCountParameter.Value.Value <= 1)
+            {
+                world = WorldParameter.Value;
+            }
+            else
+            {
+                world = GetWorldMatrix(seed);
+            }
+            ISymbolicExpressionGrammar grammar = Encoding.Grammar;
+            return new World(WorldWidthParameter.Value.Value, WorldHeightParameter.Value.Value, world) { RepeatSense = grammar.Symbols.First(s => s.Name == Sensing.Repeat.ToString()).Enabled };
+        }
+
+        private IntMatrix GetWorldMatrix(int seed)
+        {
+            Random rand = new Random(seed);
+            int worldIdx = rand.Next(0, WorldCountParameter.Value.Value);
+            return worldIdx == 0 ? WorldParameter.Value :
+                    worldIdx == 1 ? World2Parameter.Value :
+                    worldIdx == 2 ? World3Parameter.Value :
+                    World4Parameter.Value;
+        }
+    }
+    public class LambdaComparer<T> : IEqualityComparer<T>
+    {
+        private readonly Func<T, T, bool> _expression;
+
+        public LambdaComparer(Func<T, T, bool> lambda)
+        {
+            _expression = lambda;
+        }
+
+        public bool Equals(T x, T y)
+        {
+            return _expression(x, y);
+        }
+
+        public int GetHashCode(T obj)
+        {
+            /*
+             If you just return 0 for the hash the Equals comparer will kick in. 
+             The underlying evaluation checks the hash and then short circuits the evaluation if it is false.
+             Otherwise, it checks the Equals. If you force the hash to be true (by assuming 0 for both objects), 
+             you will always fall through to the Equals check which is what we are always going for.
+            */
+            return 0;
         }
     }
 }

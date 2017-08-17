@@ -7,7 +7,7 @@ using HeuristicLab.MainForm;
 
 namespace ArtificialLifePlugin
 {
-    [View("Artificial Life View")]
+    [View("Creative Creatures View")]
     [Content(typeof(Solution), IsDefaultView = true)]
     public sealed partial class SolutionView : NamedItemView
     {
@@ -36,20 +36,20 @@ namespace ArtificialLifePlugin
             }
             else
             {
-                PaintTiles(pictureBox.Image, Content.World);
+                PaintWorld(pictureBox.Image, Content.World);
             }
         }
 
-        private void PaintTiles(Image image, World world)
+        private void PaintWorld(Image image, World world)
         {
             int w = image.Width;
             int h = image.Height;
 
-            float tileHeight = h / (float)world.Height;
-            float tileWidth = w / (float)world.Width;
+            float cellHeight = h / (float)world.Height;
+            float cellWidth = w / (float)world.Width;
 
-            tileWidth = Math.Min(tileWidth, tileHeight);
-            tileHeight = tileWidth; // draw square tiles
+            cellWidth = Math.Min(cellWidth, cellHeight);
+            cellHeight = cellWidth; // draw square tiles
 
             using (var g = Graphics.FromImage(image))
             {
@@ -60,8 +60,8 @@ namespace ArtificialLifePlugin
                     bool isFirst = world.History.IndexOf(history) == 0;
                     bool isLast = world.History.IndexOf(history) == world.History.Count - 1;
 
-                    float posX = tileWidth * history.PosX;
-                    float posY = tileHeight * history.PosY;
+                    float posX = cellWidth * history.PosX;
+                    float posY = cellHeight * history.PosY;
 
                     Brush brush = Brushes.LightBlue;
                     if (world[history.PosX, history.PosY] == WorldStatus.Eaten)
@@ -69,30 +69,30 @@ namespace ArtificialLifePlugin
                         brush = Brushes.Gold;
                     }
 
-                    g.FillRectangle(brush, posX, posY, tileWidth, tileHeight);
+                    g.FillRectangle(brush, posX, posY, cellWidth, cellHeight);
                 }
 
                 for (int y = 0; y < Content.Height; y++)
                 {
                     for (int x = 0; x < Content.Width; x++)
                     {
-                        float posX = tileWidth * x;
-                        float posY = tileHeight * y;
+                        float posX = cellWidth * x;
+                        float posY = cellHeight * y;
                         switch (world[x, y])
                         {
                             case WorldStatus.Eaten:
-                            case WorldStatus.Food: g.DrawImage(Properties.Resources.food, new Rectangle((int)posX, (int)posY, (int)tileWidth, (int)tileHeight)); break;
+                            case WorldStatus.Food: g.DrawImage(Properties.Resources.food, new Rectangle((int)posX, (int)posY, (int)cellWidth, (int)cellHeight)); break;
                         }
 
-                        g.DrawLine(Pens.Black, posX, posY, posX, posY + tileHeight);
-                        g.DrawLine(Pens.Black, posX, posY, posX + tileWidth, posY);
+                        g.DrawLine(Pens.Black, posX, posY, posX, posY + cellHeight);
+                        g.DrawLine(Pens.Black, posX, posY, posX + cellWidth, posY);
                     }
                 }
 
                 var first = world.History.First();
-                g.DrawImage(Properties.Resources.start, new Rectangle((int)(first.PosX * tileWidth), (int)(first.PosY * tileHeight), (int)tileWidth, (int)tileHeight));
+                g.DrawImage(Properties.Resources.start, new Rectangle((int)(first.PosX * cellWidth), (int)(first.PosY * cellHeight), (int)cellWidth, (int)cellHeight));
                 var last = world.History.Last();
-                g.DrawImage(Properties.Resources.end, new Rectangle((int)(last.PosX * tileWidth), (int)(last.PosY * tileHeight), (int)tileWidth, (int)tileHeight));
+                g.DrawImage(Properties.Resources.end, new Rectangle((int)(last.PosX * cellWidth), (int)(last.PosY * cellHeight), (int)cellWidth, (int)cellHeight));
 
                 g.DrawLine(Pens.Black, 0, h - 1, w, h - 1);
                 g.DrawLine(Pens.Black, w - 1, 0, w - 1, h);

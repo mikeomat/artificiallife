@@ -20,11 +20,12 @@ namespace ArtificialLifePlugin
         public int InitialFood { get; private set; }
         [Storable]
         public List<Creature> History { get; set; }
+        [Storable]
+        public bool RepeatSense { get; set; }
 
         [StorableConstructor]
         public World(bool deserializing)
         {
-
         }
 
         public World(int width, int height, IntMatrix matrix)
@@ -34,6 +35,7 @@ namespace ArtificialLifePlugin
             History = new List<Creature>();
             InitWorld(width, height);
             InitFood(matrix);
+            RepeatSense = true;
         }
 
         public World(int width, int height, int seed)
@@ -43,6 +45,7 @@ namespace ArtificialLifePlugin
             History = new List<Creature>();
             InitWorld(width, height);
             InitFood(seed);
+            RepeatSense = true;
         }
 
         private void InitFood(IntMatrix matrix)
