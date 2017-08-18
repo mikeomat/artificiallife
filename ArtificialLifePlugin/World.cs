@@ -22,6 +22,7 @@ namespace ArtificialLifePlugin
         public List<Creature> History { get; set; }
         [Storable]
         public bool RepeatSense { get; set; }
+        public int WorldNr { get; set; }
 
         [StorableConstructor]
         public World(bool deserializing)

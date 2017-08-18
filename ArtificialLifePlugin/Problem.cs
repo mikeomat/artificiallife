@@ -122,56 +122,41 @@ namespace ArtificialLifePlugin
 
         public override void Analyze(ISymbolicExpressionTree[] trees, double[] qualities, ResultCollection results, IRandom random)
         {
-            const string bestSolutionResultName = "Best Solution";
-            const string bestSolutionTreeResultName = "Best Solution Tree";
-            const string bestSolutionTreeLengthName = "Best Solution Tree Length";
-            const string secondBestSolutionResultName = "Second Best Solution";
-            const string secondBestSolutionTreeResultName = "Second Best Solution Tree";
-            const string secondBestSolutionTreeLengthName = "Second Best Solution Tree Length";
-            const string thirdBestSolutionResultName = "Third Best Solution";
-            const string thirdBestSolutionTreeResultName = "Third Best Solution Tree";
-            const string thirdBestSolutionTreeLengthName = "Third Best Solution Tree Length";
+            const int max = 1000;
+            const string bestSolutionsName = "Best Solutions";
+            const string bestSolutionsTreeName = "Best Solutions Trees";
+            const string bestSolutionsCountName = "Best Solutions Count";
             var bestQuality = qualities.Max();
 
-            //if (results.ContainsKey(thirdBestSolutionResultName) && ((Solution)(results[thirdBestSolutionResultName].Value)).Quality >= bestQuality && ((Solution)(results[thirdBestSolutionResultName].Value)) >= bestQuality)
-            //{
-            //    return;
-            //}
-
-            //var bestQualityIdxs = qualities.Select((q, idx) => new { quality = q, index = idx }).OrderByDescending(q => q.quality).Select(q => q.index).ToList();
-            var bestIdxs = trees.Distinct().Select((t, idx) => new { tree = t, index = idx, quality = qualities[idx] })
-                                .OrderByDescending(t => t.quality).ThenBy(t => t.tree.Length).Select(t => t.index).Take(3).ToArray();
-
-            var solutions = bestIdxs.Select(i => CreateSolution(trees[i], qualities[i], ExecuteWorld(trees[i]))).ToList();
-
-            if (!results.ContainsKey(bestSolutionResultName))
+            if (results.ContainsKey(bestSolutionsName) && bestQuality < ((ItemArray<Solution>)results[bestSolutionsName].Value).First().Quality || bestQuality < 95)
             {
-                results.Add(new Result(bestSolutionResultName, solutions[0]));
-                results.Add(new Result(bestSolutionTreeResultName, solutions[0].Tree));
-                results.Add(new Result(bestSolutionTreeLengthName, new IntValue(solutions[0].Tree.Length)));
-                results.Add(new Result(secondBestSolutionResultName, solutions[1]));
-                results.Add(new Result(secondBestSolutionTreeResultName, solutions[1].Tree));
-                results.Add(new Result(secondBestSolutionTreeLengthName, new IntValue(solutions[1].Tree.Length)));
-                results.Add(new Result(thirdBestSolutionResultName, solutions[2]));
-                results.Add(new Result(thirdBestSolutionTreeResultName, solutions[2].Tree));
-                results.Add(new Result(thirdBestSolutionTreeLengthName, new IntValue(solutions[2].Tree.Length)));
+                return;
+            }
+
+            var bestSolutions = trees.Select((t, idx) => new { tree = t, index = idx, quality = qualities[idx] }).Where((t) => qualities[t.index] == bestQuality)
+                .OrderBy(t => t.tree.Length).Select(t => CreateSolution(t.tree, t.quality, ExecuteWorld(t.tree))).OrderByDescending(t => t.Quality).ToList();
+            if (!results.ContainsKey(bestSolutionsName))
+            {
+                bestSolutions = bestSolutions.Take(Math.Min(bestSolutions.Count(), max)).ToList();
+                results.Add(new Result(bestSolutionsCountName, new IntValue(bestSolutions.Count())));
+                results.Add(new Result(bestSolutionsName, new ItemArray<Solution>(bestSolutions)));
+                results.Add(new Result(bestSolutionsTreeName, new ItemArray<ISymbolicExpressionTree>(bestSolutions.Select(t => t.Tree))));
             }
             else
             {
-                solutions.AddRange(new[] { CreateSolution(((Solution)results[bestSolutionResultName].Value)),
-                                           CreateSolution(((Solution)results[secondBestSolutionResultName].Value)),
-                                           CreateSolution((Solution)results[thirdBestSolutionResultName].Value)});
-                solutions = solutions.Distinct(new LambdaComparer<Solution>((s1, s2) => s1.Tree.Length == s2.Tree.Length && s1.Quality == s2.Quality))
-                    .OrderByDescending(s => s.Quality).ThenBy(s => s.Tree.Length).ToList();
-                results[bestSolutionResultName].Value = solutions[0];
-                results[bestSolutionTreeResultName].Value = solutions[0].Tree;
-                results[bestSolutionTreeLengthName].Value = new IntValue(solutions[0].Tree.Length);
-                results[secondBestSolutionResultName].Value = solutions[1];
-                results[secondBestSolutionTreeResultName].Value = solutions[1].Tree;
-                results[secondBestSolutionTreeLengthName].Value = new IntValue(solutions[1].Tree.Length);
-                results[thirdBestSolutionResultName].Value = solutions[2];
-                results[thirdBestSolutionTreeResultName].Value = solutions[2].Tree;
-                results[thirdBestSolutionTreeLengthName].Value = new IntValue(solutions[2].Tree.Length);
+                var solutions = ((ItemArray<Solution>)results[bestSolutionsName].Value).ToList();
+                if (solutions.First().Quality < bestQuality)
+                {
+                    solutions.Clear();
+                }
+                bestSolutions.AddRange((ItemArray<Solution>)results[bestSolutionsName].Value);
+                bestSolutions = bestSolutions
+                    .Distinct(new LambdaComparer<Solution>((s1, s2) => s1.Tree.Length == s2.Tree.Length && s1.World.WorldNr == s2.World.WorldNr && s1.Tree.Depth == s2.Tree.Depth))
+                    .OrderByDescending(t => t.Quality).ThenBy(t => t.Tree.Length)
+                    .Take(Math.Min(bestSolutions.Count(), max)).ToList();
+                results[bestSolutionsName].Value = new ItemArray<Solution>(bestSolutions);
+                results[bestSolutionsTreeName].Value = new ItemArray<ISymbolicExpressionTree>(bestSolutions.Select(t => t.Tree));
+                results[bestSolutionsCountName].Value = new IntValue(bestSolutions.Count());
             }
         }
 
@@ -260,13 +245,22 @@ namespace ArtificialLifePlugin
                 world = GetWorldMatrix(seed);
             }
             ISymbolicExpressionGrammar grammar = Encoding.Grammar;
-            return new World(WorldWidthParameter.Value.Value, WorldHeightParameter.Value.Value, world) { RepeatSense = grammar.Symbols.First(s => s.Name == Sensing.Repeat.ToString()).Enabled };
+            return new World(WorldWidthParameter.Value.Value, WorldHeightParameter.Value.Value, world)
+            {
+                RepeatSense = grammar.Symbols.First(s => s.Name == Sensing.Repeat.ToString()).Enabled,
+                WorldNr = GetWorldIndex(seed)
+            };
+        }
+
+        private int GetWorldIndex(int seed)
+        {
+            Random rand = new Random(seed);
+            return rand.Next(0, WorldCountParameter.Value.Value);
         }
 
         private IntMatrix GetWorldMatrix(int seed)
         {
-            Random rand = new Random(seed);
-            int worldIdx = rand.Next(0, WorldCountParameter.Value.Value);
+            int worldIdx = GetWorldIndex(seed);
             return worldIdx == 0 ? WorldParameter.Value :
                     worldIdx == 1 ? World2Parameter.Value :
                     worldIdx == 2 ? World3Parameter.Value :

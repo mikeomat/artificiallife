@@ -11,7 +11,7 @@ namespace ArtificialLifePlugin
     {
         internal static void Execute(this ISymbolicExpressionTree tree, World world, Creature creature)
         {
-            const int maxLoops = 1000;
+            const int maxLoops = 800;
 
             world.AddToHistory(creature);
 

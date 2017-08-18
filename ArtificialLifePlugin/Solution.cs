@@ -41,7 +41,7 @@ namespace ArtificialLifePlugin
         #endregion
 
         public Solution(ISymbolicExpressionTree tree, int length, int width, double quality, World world)
-          : base("Clever Creatures Solution", "A Clever Creatures solution.")
+          : base(string.Format("CCS {0}% {1}", quality, tree.Length), "A Clever Creatures solution.")
         {
             this.Tree = tree;
             this.Height = length;
